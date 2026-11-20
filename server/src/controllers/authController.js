@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const AppError = require("../utils/AppError");
 const { signToken } = require("../utils/token");
+const { isDuplicateKeyError } = require("../utils/mongoErrors");
 
 // Cost factor: each +1 doubles the hashing time. 10 is the common default,
 // slow enough to make guessing passwords expensive, fast enough for users.
@@ -11,8 +12,6 @@ const SALT_ROUNDS = 10;
 // run a comparison against it, so "unknown email" and "wrong password" take
 // the same time and an attacker cannot use timing to discover valid emails.
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", SALT_ROUNDS);
-
-const isDuplicateKeyError = (err) => err?.code === 11000;
 
 // What both signup and login return: a token plus the public user fields.
 const authResponse = (user) => ({ token: signToken(user._id), user });

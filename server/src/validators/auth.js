@@ -1,19 +1,11 @@
 const { z } = require("zod");
+const { emailField: email } = require("./common");
 
-// Reusable field rules. `.trim().toLowerCase()` cleans the value first,
-// then `.pipe(z.email())` checks the cleaned value is a real email.
 const name = z
   .string({ error: "Name is required" })
   .trim()
   .min(2, "Name must be at least 2 characters")
   .max(100, "Name must be at most 100 characters");
-
-const email = z
-  .string({ error: "Email is required" })
-  .trim()
-  .toLowerCase()
-  .max(254, "Email is too long")
-  .pipe(z.email("Enter a valid email address"));
 
 // bcrypt only uses the first 72 bytes of a password, so we cap it there.
 const newPassword = z
