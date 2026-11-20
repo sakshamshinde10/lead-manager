@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const env = require("./config/env");
+const errorHandler = require("./middleware/errorHandler");
 
 // The Express app is built here and exported WITHOUT calling listen().
 // server.js starts it. Keeping them apart lets the automated tests
@@ -19,5 +20,8 @@ app.get("/api/health", (req, res) => {
 app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
 });
+
+// Must be registered LAST: it catches errors thrown by everything above.
+app.use(errorHandler);
 
 module.exports = app;
