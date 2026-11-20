@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const env = require("./config/env");
 const errorHandler = require("./middleware/errorHandler");
+const authRoutes = require("./routes/authRoutes");
 
 // The Express app is built here and exported WITHOUT calling listen().
 // server.js starts it. Keeping them apart lets the automated tests
@@ -15,6 +16,8 @@ app.use(express.json());
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use("/api/auth", authRoutes);
 
 // Anything that did not match a route above gets a clean JSON 404.
 app.use((req, res) => {
