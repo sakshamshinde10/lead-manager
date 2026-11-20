@@ -17,7 +17,20 @@ const userSchema = new mongoose.Schema(
     // select:false keeps it out of query results unless asked for explicitly.
     passwordHash: { type: String, required: true, select: false },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      // Safe-by-default output: "id" instead of "_id", and the password
+      // hash can never end up in an API response by accident.
+      versionKey: false,
+      transform: (doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.passwordHash;
+        return ret;
+      },
+    },
+  }
 );
 
 module.exports = mongoose.model("User", userSchema);
