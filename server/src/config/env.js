@@ -13,6 +13,9 @@ const envSchema = z.object({
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
   JWT_SECRET: z.string().min(16, "JWT_SECRET must be at least 16 characters"),
   CLIENT_ORIGIN: z.string().default("http://localhost:5173"),
+  // Optional, comma-separated, e.g. "8.8.8.8,1.1.1.1". Only needed on networks
+  // where Node's default DNS cannot resolve MongoDB Atlas "mongodb+srv" addresses.
+  DNS_SERVERS: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
