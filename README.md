@@ -127,7 +127,7 @@ client/
 
 ## Not included, and what I would do next
 
-- **Pagination.** The list is not paginated, and the table shows up to 20 rows. With many leads I would add server-side pagination.
+- **Pagination.** The API returns all of a user's matching leads in one response, and only the entrance animation is capped (first 20 rows). With many leads I would add server-side pagination.
 - **Deployment.** The app is set up to run locally. I would host the API and the frontend, and add an HTTPS-only cookie option for the token.
 - **Frontend tests.** I would add Vitest and Testing Library for the form and the leads page.
 - **Security extras.** I would add rate limiting on login and signup, and password reset.
