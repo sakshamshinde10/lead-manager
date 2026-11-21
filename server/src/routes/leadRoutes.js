@@ -6,7 +6,15 @@ const {
   updateLeadSchema,
   listQuerySchema,
 } = require("../validators/lead");
-const { options, list, create, update, remove, stats } = require("../controllers/leadController");
+const {
+  options,
+  list,
+  exportLeads,
+  create,
+  update,
+  remove,
+  stats,
+} = require("../controllers/leadController");
 
 const router = express.Router();
 
@@ -17,6 +25,7 @@ router.use(requireAuth);
 // mistake the words "options" or "stats" for a lead id.
 router.get("/options", options);
 router.get("/stats", stats);
+router.get("/export", validate(listQuerySchema, "query"), exportLeads);
 
 router.get("/", validate(listQuerySchema, "query"), list);
 router.post("/", validate(createLeadSchema), create);

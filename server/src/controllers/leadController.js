@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Lead = require("../models/Lead");
+const User = require("../models/User");
+const { buildLeadsWorkbook } = require("../utils/leadsWorkbook");
 const AppError = require("../utils/AppError");
 const escapeRegex = require("../utils/escapeRegex");
 const { isDuplicateKeyError } = require("../utils/mongoErrors");
@@ -25,19 +27,43 @@ function options(req, res) {
   res.json({ statuses: LEAD_STATUSES, sources: LEAD_SOURCES });
 }
 
-// GET /api/leads?search=ravi&status=New
-async function list(req, res) {
-  const { search, status } = req.validatedQuery;
-
-  const filter = { owner: req.userId };
+// The search and status filter shared by the list and the Excel export, so
+// both always agree on which leads match.
+function buildFilter(userId, { search, status }) {
+  const filter = { owner: userId };
   if (status) filter.status = status;
   // Case-insensitive "contains" match on the name, with the user's text
   // escaped so it is searched literally and not treated as a pattern.
   if (search) filter.name = { $regex: escapeRegex(search), $options: "i" };
+  return filter;
+}
+
+// GET /api/leads?search=ravi&status=New
+async function list(req, res) {
+  const filter = buildFilter(req.userId, req.validatedQuery);
 
   // Newest first. The index on (owner, createdAt) serves this query.
   const leads = await Lead.find(filter).sort({ createdAt: -1, _id: -1 });
   res.json({ leads, count: leads.length });
+}
+
+// GET /api/leads/export?search=&status=   ->  an .xlsx file
+// Same filters as the list, so "Export" downloads what the user is looking at.
+async function exportLeads(req, res) {
+  const query = req.validatedQuery;
+  const [leads, user] = await Promise.all([
+    Lead.find(buildFilter(req.userId, query)).sort({ createdAt: -1, _id: -1 }).lean(),
+    User.findById(req.userId).select("email").lean(),
+  ]);
+
+  const file = await buildLeadsWorkbook(leads, { exportedBy: user?.email, filters: query });
+  const day = new Date().toISOString().slice(0, 10);
+
+  res.set({
+    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "Content-Disposition": `attachment; filename="lead-manager-leads-${day}.xlsx"`,
+  });
+  res.send(Buffer.from(file));
 }
 
 // POST /api/leads
@@ -97,4 +123,4 @@ async function stats(req, res) {
   res.json({ total, byStatus });
 }
 
-module.exports = { options, list, create, update, remove, stats };
+module.exports = { options, list, exportLeads, create, update, remove, stats };
