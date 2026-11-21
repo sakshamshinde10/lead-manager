@@ -7,7 +7,7 @@ A small full-stack web app for a sales user to capture and track leads. Each per
 - **Database:** MongoDB (works with a local server or MongoDB Atlas)
 - **Validation:** Zod on both the frontend and the backend
 - **Auth:** JWT. Every user sees only their own leads
-- **Tests:** Jest, Supertest and an in-memory MongoDB (92 API tests, about 96% coverage)
+- **Tests:** Jest, Supertest and an in-memory MongoDB (103 API tests, about 96% coverage)
 
 ## Features
 
@@ -16,6 +16,7 @@ A small full-stack web app for a sales user to capture and track leads. Each per
 - Search by name and filter by status (New, Contacted, Qualified, Lost)
 - Dashboard cards with the total and per-status counts
 - Validation on both sides. Server errors (for example a duplicate email) show under the right field
+- **Export to Excel**: one click downloads the leads you are looking at (respecting search and status filter) as a formatted `.xlsx` with a Summary sheet
 - Responsive layout: a table on desktop, cards on phones
 - Accessible dialogs, text-labelled status badges, and `prefers-reduced-motion` support
 
@@ -57,6 +58,19 @@ npm run dev
 
 Open http://localhost:5173. In development, Vite forwards `/api` requests to the API on port 5000, so no extra frontend configuration is needed.
 
+## Try it with sample data
+
+`server/scripts/sampleLeads.js` holds 30 made-up leads (all four statuses, all six sources, some without phone or company, spread over the last 30 days). To load them:
+
+```bash
+cd server
+npm run seed
+```
+
+Then log in with `demo@leadmanager.test` / `Demo@12345`. The script only creates that demo account and replaces its own leads, so it is safe to run again and never touches other users.
+
+A ready-made file with the same 30 leads is in `sample-data/lead-manager-sample-leads.xlsx`, which shows what the export looks like.
+
 ## Run the tests
 
 ```bash
@@ -82,6 +96,7 @@ All lead routes need an `Authorization: Bearer <token>` header.
 | POST | `/api/leads` | Create a lead |
 | PATCH | `/api/leads/:id` | Update a lead |
 | DELETE | `/api/leads/:id` | Delete a lead |
+| GET | `/api/leads/export?search=&status=` | Download leads as an Excel file |
 | GET | `/api/leads/stats` | Counts per status |
 | GET | `/api/leads/options` | Allowed statuses and sources |
 

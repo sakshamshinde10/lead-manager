@@ -82,7 +82,40 @@ async function request(path, { method = 'GET', body, signal } = {}) {
   return data
 }
 
+// Downloads a file from the API (for example the Excel export) and makes the
+// browser save it. It needs its own function because the response is a file,
+// not JSON, and the login token still has to be sent.
+async function download(path, fallbackName) {
+  const token = tokenStore.get()
+  let response
+  try {
+    response = await fetch(`${BASE_URL}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  } catch {
+    throw new ApiError(0, 'Cannot reach the server. Check your connection and try again.')
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 && token) window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+    const data = await response.json().catch(() => null)
+    throw new ApiError(response.status, data?.message ?? 'Download failed')
+  }
+
+  // The server names the file (with today's date); use that name when present.
+  const disposition = response.headers.get('Content-Disposition') ?? ''
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? fallbackName
+
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.append(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export const api = {
+  download,
   get: (path, options) => request(path, options),
   post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
   patch: (path, body, options) => request(path, { ...options, method: 'PATCH', body }),

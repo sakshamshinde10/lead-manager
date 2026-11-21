@@ -93,7 +93,17 @@ export function useLeads() {
     [refresh],
   )
 
+  // Downloads an Excel file of what the user is looking at: the same search
+  // and status filter as the list on screen.
+  const exportLeads = useCallback(() => {
+    const params = new URLSearchParams()
+    if (debouncedSearch) params.set('search', debouncedSearch)
+    if (statusFilter) params.set('status', statusFilter)
+    return api.download(`/leads/export?${params}`, 'lead-manager-leads.xlsx')
+  }, [debouncedSearch, statusFilter])
+
   return {
+    exportLeads,
     leads,
     stats,
     options,

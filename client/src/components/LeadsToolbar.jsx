@@ -1,8 +1,19 @@
-import { Plus, Search, X } from 'lucide-react'
+import { Download, Plus, Search, X } from 'lucide-react'
 import Button from './Button'
 
-// The row above the table: search by name, filter by status, and Add lead.
-export default function LeadsToolbar({ search, onSearch, statusFilter, onStatusFilter, statuses, onAdd, addDisabled }) {
+// The row above the table: search by name, filter by status, Export and Add lead.
+export default function LeadsToolbar({
+  search,
+  onSearch,
+  statusFilter,
+  onStatusFilter,
+  statuses,
+  onAdd,
+  addDisabled,
+  onExport,
+  exporting,
+  canExport,
+}) {
   const pill = (active) =>
     'cursor-pointer rounded-full border-2 border-ink px-4 py-1.5 text-sm font-semibold transition-colors ' +
     (active ? 'bg-ink text-cream-50' : 'bg-cream-50 text-ink hover:bg-cream-200')
@@ -50,10 +61,16 @@ export default function LeadsToolbar({ search, onSearch, statusFilter, onStatusF
         </div>
       </div>
 
-      <Button onClick={onAdd} disabled={addDisabled} className="self-start lg:self-auto">
-        <Plus size={16} aria-hidden="true" />
-        Add lead
-      </Button>
+      <div className="flex flex-wrap gap-3 self-start lg:self-auto">
+        <Button variant="outline" onClick={onExport} loading={exporting} loadingText="Preparing…" disabled={!canExport}>
+          <Download size={16} aria-hidden="true" />
+          Export Excel
+        </Button>
+        <Button onClick={onAdd} disabled={addDisabled}>
+          <Plus size={16} aria-hidden="true" />
+          Add lead
+        </Button>
+      </div>
     </div>
   )
 }

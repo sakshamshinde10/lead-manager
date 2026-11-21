@@ -14,6 +14,7 @@ import { FALLBACK_STATUSES } from '../lib/status'
 
 export default function LeadsPage() {
   const {
+    exportLeads,
     leads,
     stats,
     options,
@@ -38,7 +39,21 @@ export default function LeadsPage() {
   const [drawer, setDrawer] = useState(null)
   const [leadToDelete, setLeadToDelete] = useState(null)
 
+  const [exporting, setExporting] = useState(false)
+
   const openAdd = () => setDrawer({ mode: 'create' })
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await exportLeads()
+      toast.success('Excel file downloaded')
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleSave = async (values) => {
     if (drawer.mode === 'edit') {
@@ -73,6 +88,9 @@ export default function LeadsPage() {
           statuses={options?.statuses ?? FALLBACK_STATUSES}
           onAdd={openAdd}
           addDisabled={!options}
+          onExport={handleExport}
+          exporting={exporting}
+          canExport={phase === 'ready' && leads.length > 0}
         />
 
         {/* Tells screen-reader users how many results the search or filter produced. */}
