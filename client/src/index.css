@@ -75,3 +75,25 @@
   letter-spacing: -0.015em;
   line-height: 1.02;
 }
+
+/* Modal dialogs (see components/Dialog.jsx). The dimmed backdrop fades in
+   and out with CSS, while GSAP moves the dialog itself. */
+dialog::backdrop {
+  background: rgb(42 27 20 / 0.5);
+}
+dialog[open]::backdrop {
+  animation: backdrop-in 0.3s ease-out both;
+}
+dialog.closing::backdrop {
+  animation: backdrop-out 0.28s ease-in both;
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+}
+@keyframes backdrop-out {
+  to { opacity: 0; }
+}
+/* Stop the page behind an open dialog from scrolling. */
+body:has(dialog[open]) {
+  overflow: hidden;
+}
