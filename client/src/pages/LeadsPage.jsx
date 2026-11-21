@@ -137,7 +137,7 @@ export default function LeadsPage() {
       {leadToDelete && (
         <ConfirmDialog
           title={`Delete ${leadToDelete.name}?`}
-          message="This lead will be removed for good. This can’t be undone."
+          message="This lead will be removed. This can’t be undone."
           confirmLabel="Delete lead"
           onConfirm={handleDelete}
           onClose={() => setLeadToDelete(null)}
