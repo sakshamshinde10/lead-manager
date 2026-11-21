@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Poppins, self-hosted and limited to the Latin alphabet and the four weights
+   we use. Fewer files means a faster first load. font-display: swap (set by
+   Fontsource) shows text immediately in the fallback font, then swaps. */
+@import "@fontsource/poppins/latin-400.css";
+@import "@fontsource/poppins/latin-500.css";
+@import "@fontsource/poppins/latin-600.css";
+@import "@fontsource/poppins/latin-800.css";
+
+/* Design tokens. Tailwind turns each one into utility classes, for example
+   --color-brand-500 becomes bg-brand-500, text-brand-500, border-brand-500. */
+@theme {
+  --font-sans: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* Cream: the page and surfaces */
+  --color-cream-50: #fffbf5;
+  --color-cream-100: #fff4e5;
+  --color-cream-200: #f6e6d0;
+  --color-cream-300: #e9d2b6;
+
+  /* Orange: the brand colour */
+  --color-brand-100: #ffd9c7;
+  --color-brand-500: #ff5a34;
+  --color-brand-600: #e8441b;
+  --color-brand-700: #b93512;
+
+  /* Text. Both pass WCAG AA contrast on the cream backgrounds. */
+  --color-ink: #2a1b14;
+  --color-muted: #6f5a4c;
+
+  /* A flat "offset" shadow gives buttons and cards a printed, tactile feel. */
+  --shadow-hard: 3px 3px 0 0 var(--color-ink);
+  --shadow-hard-sm: 2px 2px 0 0 var(--color-ink);
+}
+
+@layer base {
+  html {
+    background: var(--color-cream-100);
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-cream-100);
+  }
+  ::selection {
+    background: var(--color-brand-500);
+    color: var(--color-ink);
+  }
+  /* A clear keyboard focus ring everywhere (accessibility). */
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  /* Respect users who ask their system for less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* The big, heavy, uppercase heading style from the reference image. */
+@utility display {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
+}
