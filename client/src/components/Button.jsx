@@ -13,11 +13,18 @@ const variants = {
   ghost: 'border-2 border-transparent bg-transparent text-ink hover:bg-cream-200',
 }
 
+const sizes = {
+  md: 'px-6 py-3 text-sm',
+  sm: 'px-4 py-2 text-sm',
+  icon: 'h-10 w-10 text-sm',
+}
+
 // `as` lets the same styling be used on a router <Link>, so a link that looks
 // like a button is still a real link (never a button nested inside a link).
 export default function Button({
   as: Component = 'button',
   variant = 'primary',
+  size = 'md',
   loading = false,
   loadingText,
   className = '',
@@ -31,9 +38,9 @@ export default function Button({
     <Component
       {...(isButton ? { disabled: disabled || loading } : {})}
       className={
-        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold ' +
+        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold ' +
         'transition-all duration-150 disabled:pointer-events-none disabled:opacity-60 ' +
-        `${variants[variant]} ${className}`
+        `${sizes[size]} ${variants[variant]} ${className}`
       }
       {...props}
     >
