@@ -12,6 +12,22 @@ const email = z
   .max(254, 'Email is too long')
   .pipe(z.email('Enter a valid email address'))
 
+// The status and source lists are owned by the server (GET /leads/options),
+// so here we only check that something was chosen. The server enforces the
+// exact allowed values.
+export const leadSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be at most 100 characters'),
+  email,
+  phone: z
+    .string()
+    .trim()
+    .max(20, 'Phone must be at most 20 characters')
+    .refine((value) => value === '' || /^\+?[\d\s\-()]{7,20}$/.test(value), 'Enter a valid phone number'),
+  company: z.string().trim().max(100, 'Company must be at most 100 characters'),
+  source: z.string().min(1, 'Choose a source'),
+  status: z.string().min(1, 'Choose a status'),
+})
+
 export const loginSchema = z.object({
   email,
   password: z.string().min(1, 'Password is required'),
