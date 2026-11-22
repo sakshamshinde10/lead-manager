@@ -13,18 +13,18 @@ describe("POST /api/auth/signup", () => {
   it("creates an account and returns a token and the public user", async () => {
     const res = await request(app)
       .post("/api/auth/signup")
-      .send({ name: "  Asha Rao ", email: " ASHA@Example.com ", password: "Password@123" });
+      .send({ name: "  Test User ", email: " TEST@Example.com ", password: "Password@123" });
 
     expect(res.status).toBe(201);
     expect(typeof res.body.token).toBe("string");
-    expect(res.body.user).toMatchObject({ name: "Asha Rao", email: "asha@example.com" });
+    expect(res.body.user).toMatchObject({ name: "Test User", email: "test@example.com" });
     expect(res.body.user.id).toBeDefined();
   });
 
   it("never returns the password or its hash", async () => {
     const res = await request(app)
       .post("/api/auth/signup")
-      .send({ name: "Asha", email: "asha@example.com", password: "Password@123" });
+      .send({ name: "Test", email: "test@example.com", password: "Password@123" });
 
     const text = JSON.stringify(res.body);
     expect(text).not.toContain("passwordHash");
@@ -34,18 +34,18 @@ describe("POST /api/auth/signup", () => {
   it("stores a bcrypt hash, not the plain password", async () => {
     await request(app)
       .post("/api/auth/signup")
-      .send({ name: "Asha", email: "asha@example.com", password: "Password@123" });
+      .send({ name: "Test", email: "test@example.com", password: "Password@123" });
 
-    const stored = await User.findOne({ email: "asha@example.com" }).select("+passwordHash");
+    const stored = await User.findOne({ email: "test@example.com" }).select("+passwordHash");
     expect(stored.passwordHash).not.toBe("Password@123");
     expect(stored.passwordHash).toMatch(/^\$2[aby]\$10\$/);
   });
 
   it("rejects a duplicate email with 409", async () => {
-    await registerUser(app, { email: "asha@example.com" });
+    await registerUser(app, { email: "test@example.com" });
     const res = await request(app)
       .post("/api/auth/signup")
-      .send({ name: "Other", email: "ASHA@example.com", password: "Password@123" });
+      .send({ name: "Other", email: "TEST@example.com", password: "Password@123" });
 
     expect(res.status).toBe(409);
     expect(res.body.errors.email).toBe("An account with this email already exists");

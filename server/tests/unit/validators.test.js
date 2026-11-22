@@ -10,16 +10,16 @@ const errorFor = (result, field) =>
   result.error?.issues.find((issue) => issue.path[0] === field)?.message;
 
 describe("signupSchema", () => {
-  const valid = { name: "Asha Rao", email: "asha@example.com", password: "Password@123" };
+  const valid = { name: "Test User", email: "test@example.com", password: "Password@123" };
 
   it("accepts valid input", () => {
     expect(signupSchema.safeParse(valid).success).toBe(true);
   });
 
   it("trims and lowercases the email and trims the name", () => {
-    const result = signupSchema.parse({ ...valid, name: "  Asha  ", email: "  ASHA@Example.COM " });
-    expect(result.name).toBe("Asha");
-    expect(result.email).toBe("asha@example.com");
+    const result = signupSchema.parse({ ...valid, name: "  Test  ", email: "  TEST@Example.COM " });
+    expect(result.name).toBe("Test");
+    expect(result.email).toBe("test@example.com");
   });
 
   it("rejects an invalid email, a short password and a one-letter name", () => {
