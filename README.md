@@ -110,6 +110,40 @@ All lead routes need an `Authorization: Bearer <token>` header.
 | GET | `/api/leads/export?search=&status=` | Download leads as an Excel file |
 | GET | `/api/health` | Check the API is up |
 
+## Database design
+
+MongoDB, with two collections. One user has many leads, and each lead stores the id of the user who owns it.
+
+```
+users                                  leads
+-----                                  -----
+_id            ObjectId                _id         ObjectId
+name           String (max 100)        owner       ObjectId  -> users._id (required)
+email          String, unique          name        String (max 100)
+passwordHash   String (bcrypt)         email       String, lowercase (max 254)
+createdAt      Date                    phone       String, optional (max 20)
+updatedAt      Date                    company     String, optional (max 100)
+                                       source      Website | Referral | LinkedIn | Cold Call | Event | Other
+                                       status      New | Contacted | Qualified | Lost (default New)
+                                       createdAt, updatedAt
+```
+
+**Why this shape**
+
+- **Two collections, with a reference.** A lead is not nested inside a user, so a user with thousands of leads never produces one huge document. The `owner` field is how each user sees only their own leads: every lead query filters by it.
+- **Fixed lists live in one place.** The allowed statuses and sources are defined once on the server and used by the model, the validation and the dropdowns.
+- **The password is never stored.** Only the bcrypt hash is, and it is hidden from query results by default.
+- **Emails are lowercased** so `A@x.com` and `a@x.com` are the same account.
+
+**Indexes**
+
+| Collection | Index | What it is for |
+| --- | --- | --- |
+| users | `email` (unique) | Fast login lookup, and no two accounts with the same email |
+| leads | `owner`, `email` (unique) | Stops a user saving the same lead email twice, and returns a clean 409 |
+| leads | `owner`, `createdAt` (descending) | Listing a user's leads, newest first |
+| leads | `owner`, `status` | Filtering by status and counting leads per status for the dashboard |
+
 ## Design decisions
 
 - **Ownership is enforced in every query.** Each lead query filters by the logged-in user's id. Another user's lead returns 404, not 403, so it does not reveal that the lead exists.
