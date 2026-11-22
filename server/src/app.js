@@ -9,9 +9,12 @@ const leadRoutes = require("./routes/leadRoutes");
 // server.js starts it. Keeping them apart lets the automated tests
 // import the app and call it directly without opening a real port.
 const app = express();
+// Do not advertise the framework in every response header.
+app.disable("x-powered-by");
 
 app.use(cors({ origin: env.CLIENT_ORIGIN }));
-app.use(express.json());
+// A lead or a login is tiny, so a small body limit rejects abuse early.
+app.use(express.json({ limit: "10kb" }));
 
 // Simple health check: lets us (and hosting platforms) confirm the API is up.
 app.get("/api/health", (req, res) => {

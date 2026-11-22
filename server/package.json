@@ -18,7 +18,6 @@
     ],
     "testTimeout": 30000
   },
-  "keywords": [],
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
