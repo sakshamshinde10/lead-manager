@@ -4,7 +4,8 @@
 //   2. turns failures into one predictable error type (ApiError)
 //   3. tells the rest of the app when the token is no longer valid
 
-const BASE_URL = `${import.meta.env.VITE_API_URL ?? ''}/api`
+// A trailing slash in VITE_API_URL is removed so we never request "//api/...".
+const BASE_URL = `${(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')}/api`
 const TOKEN_KEY = 'lead-manager-token'
 
 export const AUTH_EXPIRED_EVENT = 'auth:expired'

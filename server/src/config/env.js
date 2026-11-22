@@ -12,7 +12,11 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
   MONGO_URI: z.string().min(1, "MONGO_URI is required"),
   JWT_SECRET: z.string().min(16, "JWT_SECRET must be at least 16 characters"),
-  CLIENT_ORIGIN: z.string().default("http://localhost:5173"),
+  // A browser's Origin header never ends with "/", so strip one if it was typed.
+  CLIENT_ORIGIN: z
+    .string()
+    .default("http://localhost:5173")
+    .transform((value) => value.trim().replace(/\/+$/, "")),
   // Optional, comma-separated, e.g. "8.8.8.8,1.1.1.1". Only needed on networks
   // where Node's default DNS cannot resolve MongoDB Atlas "mongodb+srv" addresses.
   DNS_SERVERS: z.string().optional(),
