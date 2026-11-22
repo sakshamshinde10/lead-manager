@@ -6,7 +6,7 @@ import AuthLayout from '../components/AuthLayout'
 import Button from '../components/Button'
 import FormField from '../components/FormField'
 import { useAuth } from '../hooks/useAuth'
-import { ApiError } from '../lib/api'
+import { showApiError } from '../lib/formErrors'
 import { signupSchema } from '../lib/schemas'
 
 export default function SignupPage() {
@@ -26,12 +26,7 @@ export default function SignupPage() {
       await signup(values)
       navigate('/leads', { replace: true })
     } catch (error) {
-      if (error instanceof ApiError && error.errors) {
-        // For example: "An account with this email already exists" under Email.
-        Object.entries(error.errors).forEach(([field, message]) => setError(field, { message }))
-      } else {
-        setError('root', { message: error.message })
-      }
+      showApiError(error, setError)
     }
   }
 
@@ -54,7 +49,7 @@ export default function SignupPage() {
           </p>
         )}
 
-        <FormField label="Your name" autoComplete="name" placeholder="Asha Rao" error={errors.name?.message} {...register('name')} />
+        <FormField label="Your name" autoComplete="name" placeholder="Full name" error={errors.name?.message} {...register('name')} />
 
         <FormField
           label="Email"

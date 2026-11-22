@@ -5,7 +5,7 @@ import Button from './Button'
 import Dialog from './Dialog'
 import FormField from './FormField'
 import SelectField from './SelectField'
-import { ApiError } from '../lib/api'
+import { showApiError } from '../lib/formErrors'
 import { leadSchema } from '../lib/schemas'
 
 const EMPTY_LEAD = { name: '', email: '', phone: '', company: '', source: '', status: 'New' }
@@ -42,12 +42,7 @@ export default function LeadDrawer({ mode, lead, options, onSubmit, onClose }) {
             await onSubmit(values)
             close()
           } catch (error) {
-            if (error instanceof ApiError && error.errors) {
-              // For example: "You already have a lead with this email" under Email.
-              Object.entries(error.errors).forEach(([field, message]) => setError(field, { message }))
-            } else {
-              setError('root', { message: error.message })
-            }
+            showApiError(error, setError)
           }
         })
 

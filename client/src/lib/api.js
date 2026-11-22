@@ -46,6 +46,15 @@ export class ApiError extends Error {
   }
 }
 
+// Turns a failed response into an ApiError (the one error type the UI knows).
+// A 401 while we HAD a token means it expired or was revoked: tell the app to
+// log out. (A 401 on the login form has no token yet, so it is ignored.)
+async function failure(response, token, parsed) {
+  const data = parsed === undefined ? await response.json().catch(() => null) : parsed
+  if (response.status === 401 && token) window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+  return new ApiError(response.status, data?.message ?? 'Something went wrong', data?.errors)
+}
+
 async function request(path, { method = 'GET', body, signal } = {}) {
   const token = tokenStore.get()
   const headers = {}
@@ -70,16 +79,7 @@ async function request(path, { method = 'GET', body, signal } = {}) {
   if (response.status === 204) return null
 
   const data = await response.json().catch(() => null)
-
-  if (!response.ok) {
-    // A 401 while we HAD a token means it expired or was revoked: tell the app
-    // to log out. (A 401 on the login form has no token yet, so it is ignored.)
-    if (response.status === 401 && token) {
-      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
-    }
-    throw new ApiError(response.status, data?.message ?? 'Something went wrong', data?.errors)
-  }
-
+  if (!response.ok) throw await failure(response, token, data)
   return data
 }
 
@@ -95,11 +95,7 @@ async function download(path, fallbackName) {
     throw new ApiError(0, 'Cannot reach the server. Check your connection and try again.')
   }
 
-  if (!response.ok) {
-    if (response.status === 401 && token) window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
-    const data = await response.json().catch(() => null)
-    throw new ApiError(response.status, data?.message ?? 'Download failed')
-  }
+  if (!response.ok) throw await failure(response, token)
 
   // The server names the file (with today's date); use that name when present.
   const disposition = response.headers.get('Content-Disposition') ?? ''

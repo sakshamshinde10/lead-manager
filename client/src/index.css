@@ -31,7 +31,6 @@
 
   /* A flat "offset" shadow gives buttons and cards a printed, tactile feel. */
   --shadow-hard: 3px 3px 0 0 var(--color-ink);
-  --shadow-hard-sm: 2px 2px 0 0 var(--color-ink);
 }
 
 @layer base {

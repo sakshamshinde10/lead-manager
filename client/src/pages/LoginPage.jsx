@@ -6,7 +6,7 @@ import AuthLayout from '../components/AuthLayout'
 import Button from '../components/Button'
 import FormField from '../components/FormField'
 import { useAuth } from '../hooks/useAuth'
-import { ApiError } from '../lib/api'
+import { showApiError } from '../lib/formErrors'
 import { loginSchema } from '../lib/schemas'
 
 export default function LoginPage() {
@@ -29,13 +29,7 @@ export default function LoginPage() {
       await login(values)
       navigate(destination, { replace: true })
     } catch (error) {
-      if (error instanceof ApiError && error.errors) {
-        // Put each server message next to the field it belongs to.
-        Object.entries(error.errors).forEach(([field, message]) => setError(field, { message }))
-      } else {
-        // For example a wrong password, or the server being unreachable.
-        setError('root', { message: error.message })
-      }
+      showApiError(error, setError)
     }
   }
 
