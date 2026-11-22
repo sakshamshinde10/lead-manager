@@ -83,6 +83,36 @@ The tests start their own in-memory MongoDB, so they need no database and never 
 
 The frontend has a linter (`npm run lint`) and a production build (`npm run build`) in `client`. It has no automated tests yet.
 
+## Deployment
+
+The API is meant for a Node host such as **Render**, and the frontend for **Vercel**. Both read their settings from environment variables, so no code changes are needed.
+
+**API (Render web service)**
+
+| Setting | Value |
+| --- | --- |
+| Root directory | `server` |
+| Build command | `npm install` |
+| Start command | `npm start` |
+| `MONGO_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | A new long random string (do not reuse the local one) |
+| `CLIENT_ORIGIN` | The frontend's URL, with no trailing slash (CORS allows only this origin) |
+| `NODE_ENV` | `production` |
+
+Render provides `PORT` itself. In MongoDB Atlas, allow the host in **Network Access** (for example `0.0.0.0/0`), because Render's IP addresses change. `GET /api/health` confirms the API is up.
+
+**Frontend (Vercel)**
+
+| Setting | Value |
+| --- | --- |
+| Root directory | `client` |
+| Framework preset | Vite |
+| `VITE_API_URL` | The API's URL, for example `https://your-api.onrender.com` (no `/api`, no trailing slash) |
+
+`client/vercel.json` rewrites every path to `index.html`, so refreshing a page such as `/leads` works.
+
+Deploy the API first, then the frontend, then set `CLIENT_ORIGIN` on the API to the frontend's URL and redeploy it. On a free Render plan the API sleeps when idle, so the first request after a pause can take up to a minute.
+
 ## API
 
 All lead routes need an `Authorization: Bearer <token>` header.
@@ -143,7 +173,7 @@ client/
 ## Not included, and what I would do next
 
 - **Pagination.** The API returns all of a user's matching leads in one response, and only the entrance animation is capped (first 20 rows). With many leads I would add server-side pagination.
-- **Deployment.** The app is set up to run locally. I would host the API and the frontend, and add an HTTPS-only cookie option for the token.
+- **Deployment hardening.** The app can be deployed (see above), but I would add an httpOnly cookie option for the token, monitoring, and CI that runs the tests on every push.
 - **Frontend tests.** I would add Vitest and Testing Library for the form and the leads page.
 - **Security extras.** I would add rate limiting on login and signup, and password reset.
 - **Token storage.** The token is kept in `localStorage`, which is simple but readable by injected scripts. An httpOnly cookie would be safer.
