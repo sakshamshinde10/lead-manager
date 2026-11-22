@@ -173,7 +173,5 @@ client/
 ## Not included, and what I would do next
 
 - **Pagination.** The API returns all of a user's matching leads in one response, and only the entrance animation is capped (first 20 rows). With many leads I would add server-side pagination.
-- **Deployment hardening.** The app can be deployed (see above), but I would add an httpOnly cookie option for the token, monitoring, and CI that runs the tests on every push.
-- **Frontend tests.** I would add Vitest and Testing Library for the form and the leads page.
 - **Security extras.** I would add rate limiting on login and signup, and password reset.
 - **Token storage.** The token is kept in `localStorage`, which is simple but readable by injected scripts. An httpOnly cookie would be safer.
