@@ -1,54 +1,68 @@
 # Lead Manager
 
-A small full-stack web app for a sales user to capture and track leads. Each person signs up, then adds, searches, edits and deletes their own leads, with live counts per status on a dashboard.
+A small full-stack web app for a sales person to record leads (people who might become customers) and track how far each one has progressed. Each user signs up and sees only their own leads.
 
-- **Frontend:** React 19, Vite, Tailwind CSS v4, React Hook Form, GSAP
-- **Backend:** Node.js, Express 5, Mongoose
-- **Database:** MongoDB (works with a local server or MongoDB Atlas)
-- **Validation:** Zod on both the frontend and the backend
-- **Auth:** JWT. Every user sees only their own leads
-- **Tests:** Jest, Supertest and an in-memory MongoDB (108 API tests, about 96% coverage)
+**Live demo:** https://lead-manager-topaz-seven.vercel.app
+The API runs on Render's free plan, so the first request after a quiet period can take up to a minute while it wakes up.
 
-## Features
+You can log in with the demo account `demo@leadmanager.test` / `Demo@12345` (it has 30 sample leads), or create your own.
 
-- Signup and login, with the token kept in the browser and expired sessions handled. New passwords need at least 8 characters, a number and a special character
-- Add, view, edit and delete leads. Delete asks for confirmation first
-- Search by name and filter by status (New, Contacted, Qualified, Lost)
-- Dashboard cards with the total and per-status counts
-- Validation on both sides. Server errors (for example a duplicate email) show under the right field
-- **Export to Excel**: one click downloads the leads you are looking at (respecting search and status filter) as a formatted `.xlsx` with a Summary sheet
-- Responsive layout: a table on desktop, cards on phones
-- Accessible dialogs, text-labelled status badges, and `prefers-reduced-motion` support
+## What it does
+
+The required features:
+
+- Add a lead: name, email, phone, company, source (dropdown) and status (New, Contacted, Qualified, Lost)
+- Show all leads in a table with the status clearly visible
+- Edit a lead and update its status
+- Delete a lead, with a confirmation step
+- Search by name and filter by status
+- Validation on both the frontend and the backend (valid email, required fields)
+
+Optional extras I chose:
+
+- Signup and login, so every user has their own leads
+- A dashboard with the number of leads per status
+- Automated API tests
+
+Also added: an **Export to Excel** button that downloads the leads currently shown, and a seed script with 30 sample leads for trying the app.
+
+Not done: pagination and sorting (the other optional extra).
+
+## Tech stack and why
+
+| Part | Choice | Why |
+| --- | --- | --- |
+| Frontend | React, Vite, Tailwind CSS, React Hook Form, GSAP | React and Vite are quick to build with. Tailwind keeps the colours and fonts in one place. GSAP handles the animations. |
+| Backend | Node.js, Express 5 | A small REST API. Express 5 passes errors from async handlers on automatically. |
+| Database | MongoDB with Mongoose | A lead is naturally one document, and Mongoose gives a schema and indexes. |
+| Validation | Zod, on both sides | The browser gives instant feedback, and the server checks again because it cannot trust the browser. |
+| Auth | JWT and bcrypt | Stateless login. Passwords are stored only as bcrypt hashes. |
+| Tests | Jest, Supertest, in-memory MongoDB | Tests run against a throw-away database and never touch real data. |
 
 ## Run it locally
 
-You need Node.js 20 or newer and a MongoDB connection string (a local MongoDB or a free Atlas cluster).
+You need Node.js 20 or newer and a MongoDB connection string (local MongoDB or a free Atlas cluster).
 
-**1. Start the API**
+**1. API**
 
 ```bash
 cd server
 npm install
 cp .env.example .env     # on Windows PowerShell: Copy-Item .env.example .env
-```
-
-Open `server/.env` and fill in the values:
-
-| Variable | Meaning |
-| --- | --- |
-| `PORT` | Port for the API (default 5000) |
-| `MONGO_URI` | Your MongoDB connection string |
-| `JWT_SECRET` | A long random string (at least 16 characters) used to sign login tokens |
-| `CLIENT_ORIGIN` | Where the frontend runs (default `http://localhost:5173`), allowed through CORS |
-| `DNS_SERVERS` | Optional. Only set it (for example `8.8.8.8,1.1.1.1`) if Atlas fails with `querySrv ECONNREFUSED` |
-
-The real `.env` is git-ignored. `.env.example` only documents the names.
-
-```bash
 npm run dev
 ```
 
-**2. Start the frontend** (in a second terminal)
+Fill in `server/.env` before starting:
+
+| Variable | Meaning |
+| --- | --- |
+| `MONGO_URI` | Your MongoDB connection string |
+| `JWT_SECRET` | A long random string (at least 16 characters) used to sign login tokens |
+| `PORT` | Port for the API (default 5000) |
+| `CLIENT_ORIGIN` | The frontend's address, allowed through CORS (default `http://localhost:5173`) |
+| `DNS_SERVERS` | Optional. Only if Atlas fails with `querySrv ECONNREFUSED`, for example `8.8.8.8,1.1.1.1` |
+
+**2. Frontend** (in a second terminal)
 
 ```bash
 cd client
@@ -56,62 +70,27 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. In development, Vite forwards `/api` requests to the API on port 5000, so no extra frontend configuration is needed.
+Open http://localhost:5173. Vite forwards `/api` requests to the API on port 5000.
 
-## Try it with sample data
-
-`server/scripts/sampleLeads.js` holds 30 made-up leads (all four statuses, all six sources, some without phone or company, spread over the last 30 days). To load them:
+**3. Optional: sample data**
 
 ```bash
 cd server
 npm run seed
 ```
 
-Then log in with `demo@leadmanager.test` / `Demo@12345`. The script only creates that demo account and replaces its own leads, so it is safe to run again and never touches other users.
+This creates the demo account above with 30 leads. It only replaces that account's own leads. A ready-made Excel file with the same leads is in `sample-data/`.
 
-A ready-made file with the same 30 leads is in `sample-data/lead-manager-sample-leads.xlsx`, which shows what the export looks like.
-
-## Run the tests
+## Tests
 
 ```bash
 cd server
 npm test
-npm run test:coverage
 ```
 
-The tests start their own in-memory MongoDB, so they need no database and never touch real data. The `npm test` script passes `--experimental-vm-modules`, which the in-memory database needs, so use the script rather than calling `jest` directly.
+108 tests (API tests with Supertest plus unit tests), about 98% statement coverage. They need no database or `.env`. Use `npm test` rather than calling `jest` directly, because the script adds `--experimental-vm-modules`, which the in-memory database needs.
 
-The frontend has a linter (`npm run lint`) and a production build (`npm run build`) in `client`. It has no automated tests yet.
-
-## Deployment
-
-The API is meant for a Node host such as **Render**, and the frontend for **Vercel**. Both read their settings from environment variables, so no code changes are needed.
-
-**API (Render web service)**
-
-| Setting | Value |
-| --- | --- |
-| Root directory | `server` |
-| Build command | `npm install` |
-| Start command | `npm start` |
-| `MONGO_URI` | Your MongoDB Atlas connection string |
-| `JWT_SECRET` | A new long random string (do not reuse the local one) |
-| `CLIENT_ORIGIN` | The frontend's URL, with no trailing slash (CORS allows only this origin) |
-| `NODE_ENV` | `production` |
-
-Render provides `PORT` itself. In MongoDB Atlas, allow the host in **Network Access** (for example `0.0.0.0/0`), because Render's IP addresses change. `GET /api/health` confirms the API is up.
-
-**Frontend (Vercel)**
-
-| Setting | Value |
-| --- | --- |
-| Root directory | `client` |
-| Framework preset | Vite |
-| `VITE_API_URL` | The API's URL, for example `https://your-api.onrender.com` (no `/api`, no trailing slash) |
-
-`client/vercel.json` rewrites every path to `index.html`, so refreshing a page such as `/leads` works.
-
-Deploy the API first, then the frontend, then set `CLIENT_ORIGIN` on the API to the frontend's URL and redeploy it. On a free Render plan the API sleeps when idle, so the first request after a pause can take up to a minute.
+The frontend has `npm run lint` and `npm run build`, but no automated tests.
 
 ## API
 
@@ -126,52 +105,40 @@ All lead routes need an `Authorization: Bearer <token>` header.
 | POST | `/api/leads` | Create a lead |
 | PATCH | `/api/leads/:id` | Update a lead |
 | DELETE | `/api/leads/:id` | Delete a lead |
-| GET | `/api/leads/export?search=&status=` | Download leads as an Excel file |
 | GET | `/api/leads/stats` | Counts per status |
 | GET | `/api/leads/options` | Allowed statuses and sources |
+| GET | `/api/leads/export?search=&status=` | Download leads as an Excel file |
+| GET | `/api/health` | Check the API is up |
 
-## Project layout
+## Design decisions
 
-```
-server/
-  src/
-    config/        env validation, database connection
-    models/        User and Lead schemas
-    controllers/   request handlers
-    middleware/    auth, validation, error handling
-    validators/    Zod schemas
-    routes/
-  tests/           API tests and unit tests
-client/
-  src/
-    pages/         Login, Signup, Leads, NotFound
-    components/    UI pieces (dialogs, table, stat cards, form fields)
-    hooks/         useLeads, useDebounce, useAuth
-    context/       auth state
-    lib/           API helper, schemas, formatting, motion setup
-```
+- **Ownership is enforced in every query.** Each lead query filters by the logged-in user's id. Another user's lead returns 404, not 403, so it does not reveal that the lead exists.
+- **Duplicate emails are blocked by the database.** A unique index on owner and email returns a clean 409, even if two requests arrive at once.
+- **One error format.** Every failure returns `{ message, errors? }`, and server-side field errors show under the right form field.
+- **Passwords.** New passwords need 8+ characters, a number and a special character. Login does not apply those rules, so older accounts can still sign in.
+- **Search is escaped.** The search text is treated as plain text, not as a pattern.
+- **Smooth search.** Typing is debounced, and an older request is cancelled so a slow response cannot replace a newer one.
+- **Accessibility.** The add/edit panel and the delete confirmation use the native `<dialog>` element (focus trap and Esc for free). Status is always shown as text, not colour alone. Animations are turned off for users who prefer reduced motion.
 
-## Technical choices and why
+## Deployment
 
-- **Zod on both sides.** The server never trusts the browser, and the browser gives instant feedback. Unknown fields are dropped, so a client cannot write fields it should not.
-- **Ownership is enforced in the query.** Every lead query filters by `owner: req.userId`. A lead that belongs to someone else returns 404, not 403, so its existence is not revealed.
-- **Passwords and tokens.** Passwords are hashed with bcrypt. Tokens are signed JWTs that expire after 7 days.
-- **Indexes match the queries.** There is a unique index on owner and email, which prevents duplicates and returns a clean 409. Other indexes cover listing by date and filtering by status.
-- **Search is escaped.** The search text is regex-escaped, so characters like `.` or `(` cannot break the query or be abused.
-- **One place for errors.** A shared `AppError` and one error handler give every failure the same JSON shape.
-- **Native `<dialog>` for the drawer and confirmation.** The browser provides the focus trap, Esc to close and the backdrop. GSAP only adds movement.
-- **Speed.** Routes are lazy-loaded, the toast library loads on demand, and vendor code is split into separate chunks. Search is debounced by 300 ms, and an older in-flight request is cancelled so a slow response can never overwrite a newer one.
-- **Contrast.** White text on the orange brand colour measured about 3.1:1, which fails accessibility guidance, so orange buttons use dark text (about 5.4:1).
+The frontend is on Vercel (root `client`, environment variable `VITE_API_URL` set to the API's address) and the API is on Render (root `server`, build `npm install`, start `npm start`, with `MONGO_URI`, `JWT_SECRET`, `CLIENT_ORIGIN` and `NODE_ENV=production` set). In MongoDB Atlas, network access has to allow Render's changing IP addresses.
 
 ## Assumptions
 
-- A lead has a name and an email. Phone and company are optional.
-- Email must be unique per user, not across all users.
-- Statuses and sources are fixed lists defined on the server and sent to the frontend, so they stay in one place.
-- Leads are private to the user who created them. There are no shared teams or roles.
+- A lead needs a name, an email and a source. Phone and company are optional.
+- An email must be unique per user, not across all users.
+- Statuses and sources are fixed lists defined on the server.
+- Leads are private to the user who created them. There are no teams or roles.
 
-## Not included, and what I would do next
+## What I would improve with more time
 
-- **Pagination.** The API returns all of a user's matching leads in one response, and only the entrance animation is capped (first 20 rows). With many leads I would add server-side pagination.
-- **Security extras.** I would add rate limiting on login and signup, and password reset.
-- **Token storage.** The token is kept in `localStorage`, which is simple but readable by injected scripts. An httpOnly cookie would be safer.
+- Pagination and sorting for large lead lists
+- Frontend tests (for example Vitest and Testing Library)
+- Rate limiting on login and signup, and a password reset flow
+- Store the token in an httpOnly cookie instead of `localStorage`
+- Run the tests automatically on every push
+
+## A note on AI tools
+
+I used an AI assistant while building this. I went through each part and can explain how it works.
