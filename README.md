@@ -7,11 +7,11 @@ A small full-stack web app for a sales user to capture and track leads. Each per
 - **Database:** MongoDB (works with a local server or MongoDB Atlas)
 - **Validation:** Zod on both the frontend and the backend
 - **Auth:** JWT. Every user sees only their own leads
-- **Tests:** Jest, Supertest and an in-memory MongoDB (103 API tests, about 96% coverage)
+- **Tests:** Jest, Supertest and an in-memory MongoDB (108 API tests, about 96% coverage)
 
 ## Features
 
-- Signup and login, with the token kept in the browser and expired sessions handled
+- Signup and login, with the token kept in the browser and expired sessions handled. New passwords need at least 8 characters, a number and a special character
 - Add, view, edit and delete leads. Delete asks for confirmation first
 - Search by name and filter by status (New, Contacted, Qualified, Lost)
 - Dashboard cards with the total and per-status counts

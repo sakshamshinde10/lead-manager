@@ -9,7 +9,7 @@ async function registerUser(app, overrides = {}) {
   const credentials = {
     name: "Test User",
     email: `user${counter}@example.com`,
-    password: "password123",
+    password: "Password@123",
     ...overrides,
   };
   const res = await request(app).post("/api/auth/signup").send(credentials);

@@ -10,7 +10,7 @@ const errorFor = (result, field) =>
   result.error?.issues.find((issue) => issue.path[0] === field)?.message;
 
 describe("signupSchema", () => {
-  const valid = { name: "Asha Rao", email: "asha@example.com", password: "password123" };
+  const valid = { name: "Asha Rao", email: "asha@example.com", password: "Password@123" };
 
   it("accepts valid input", () => {
     expect(signupSchema.safeParse(valid).success).toBe(true);
@@ -28,6 +28,24 @@ describe("signupSchema", () => {
     expect(errorFor(result, "email")).toBe("Enter a valid email address");
     expect(errorFor(result, "password")).toBe("Password must be at least 8 characters");
     expect(errorFor(result, "name")).toBe("Name must be at least 2 characters");
+  });
+
+  it.each([
+    ["has no number", "Password@abc", "Password must include a number"],
+    ["has no special character", "Password123", "Password must include a special character"],
+    ["is only letters", "abcdefghij", "Password must include a number"],
+  ])("rejects a password that %s", (_label, password, message) => {
+    const result = signupSchema.safeParse({ ...valid, password });
+    expect(result.success).toBe(false);
+    expect(errorFor(result, "password")).toBe(message);
+  });
+
+  it("accepts a password with 8+ characters, a number and a special character", () => {
+    expect(signupSchema.safeParse({ ...valid, password: "abcdef1!" }).success).toBe(true);
+  });
+
+  it("does not apply the strength rules on login", () => {
+    expect(loginSchema.safeParse({ email: "a@b.com", password: "weak" }).success).toBe(true);
   });
 
   it("rejects passwords longer than 72 characters (bcrypt limit)", () => {

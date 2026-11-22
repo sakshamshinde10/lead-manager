@@ -7,11 +7,14 @@ const name = z
   .min(2, "Name must be at least 2 characters")
   .max(100, "Name must be at most 100 characters");
 
-// bcrypt only uses the first 72 bytes of a password, so we cap it there.
+// Strength rules apply to NEW passwords only: 8+ characters, a number and a
+// special character. bcrypt only uses the first 72 bytes of a password, so we cap it there.
 const newPassword = z
   .string({ error: "Password is required" })
   .min(8, "Password must be at least 8 characters")
-  .max(72, "Password must be at most 72 characters");
+  .max(72, "Password must be at most 72 characters")
+  .regex(/\d/, "Password must include a number")
+  .regex(/[^A-Za-z0-9\s]/, "Password must include a special character");
 
 const signupSchema = z.object({ name, email, password: newPassword });
 

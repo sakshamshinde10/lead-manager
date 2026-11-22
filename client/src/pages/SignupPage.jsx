@@ -69,7 +69,7 @@ export default function SignupPage() {
           label="Password"
           type={showPassword ? 'text' : 'password'}
           autoComplete="new-password"
-          hint="At least 8 characters."
+          hint="At least 8 characters, with a number and a special character (for example @ or !)."
           error={errors.password?.message}
           right={
             <button

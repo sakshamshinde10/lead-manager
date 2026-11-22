@@ -43,5 +43,7 @@ export const signupSchema = z.object({
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
-    .max(72, 'Password must be at most 72 characters'),
+    .max(72, 'Password must be at most 72 characters')
+    .regex(/\d/, 'Password must include a number')
+    .regex(/[^A-Za-z0-9\s]/, 'Password must include a special character'),
 })
